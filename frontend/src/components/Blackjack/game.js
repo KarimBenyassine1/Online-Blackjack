@@ -2,16 +2,26 @@ var SUITS= ["♠", "♣", "♥", "♦"];
 var VALUES = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"];
 
 export default class Game{
-    constructor(deck = createDeck(), players = createPlayers()){
+    constructor(deck = createDeck(), players = createPlayers(), currentPlayer, winner, end){
         this.deck = deck
         this.players = players
+        this.currentPlayer = currentPlayer
+        this.winner = winner
+        this.end = end
         
-
-        this.shuffle()
+        this.startBlackJack()
     }
 
     get numberOfCards() {
         return this.deck.length
+    }
+
+    startBlackJack(){
+        this.currentPlayer=0
+        this.winner = ""
+        this.end = false
+        this.shuffle()
+        this.dealCards()
     }
 
     shuffle(){
@@ -24,6 +34,77 @@ export default class Game{
         }
     }
 
+    dealCards(){
+        //Gives each player two cards
+        for(var j = 0; j<this.players.length; j++){
+            for(var i = 0; i<2; i++){
+                var newCard = this.deck.pop()
+                if(i===0 && this.currentPlayer===0){newCard.hidden=true}
+                this.players[j].hand.push(newCard)
+                this.players[j].points+=this.players[j].hand[i].weight
+            }
+        }
+    }
+
+    hitMe(){
+        //adds another card to player
+        if(this.deck.length===0){
+            this.deck = createDeck()
+
+        }
+
+
+        var newCard = this.deck.pop()
+        this.players[this.currentPlayer].hand.push(newCard)
+        var length = this.players[this.currentPlayer].hand.length-1
+        this.players[this.currentPlayer].points+=this.players[this.currentPlayer].hand[length].weight
+    }
+
+    stay(){
+        //stops round for player
+
+        if(this.currentPlayer===0){
+            this.currentPlayer++
+            this.players[0].hand[0].hidden=false
+        }else{
+            this.end()
+        }
+    }
+
+    check(){
+        if(this.players[this.currentPlayer]>21){
+            this.end()
+        }else if (this.players[this.currentPlayer]===21){
+            this.end = true
+            this.winner = this.players[this.currentPlayer].role
+        }
+    }
+    
+    end(){
+        this.end = true
+        if(this.players[0]>21){
+            this.winner = this.players[1].role
+        }else if(this.players[1]>21){
+            this.winner = this.players[0].role
+        }else if(this.players[0].points>this.players[1].points){
+            this.winner = this.players[0].role
+        }else if(this.players[0].points<this.players[1].points){
+            this.winner = this.players[1].role
+        }else{
+            this.winner ="tie"
+        }
+        
+        setTimeout(this.restartGame(), 3000);
+    }
+
+    
+    restartGame(){
+        for(var i = 0; i<2; i++){
+            this.players[i].hand = []
+        }
+
+        this.dealCards()
+    }
 }
 
 function createPlayers(){
@@ -32,8 +113,8 @@ function createPlayers(){
     var roles = ["Dealer", "Better"]
 
     for(var i = 0; i<2; i++){
-        var hand = 0
-        var player = {role: roles[i], ID: "pending",  points:0,hand: hand}
+        var hand = []
+        var player = {role: roles[i], ID: "pending",  points:0, hand: hand}
         players.push(player)
     }
 
@@ -51,7 +132,7 @@ function createDeck(){
             }else if (VALUES[i]==="A"){
                 weight = 11
             }
-            var card = {value: VALUES[i], suit:SUITS[j], weight: weight}
+            var card = {value: VALUES[i], suit:SUITS[j], weight: weight, hidden:false}
             newDeck.push(card)
         }
     }
