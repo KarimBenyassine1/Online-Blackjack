@@ -53,19 +53,30 @@ export default class Game{
 
         }
 
+        var prevHand = this.players[this.currentPlayer].hand
 
         var newCard = this.deck.pop()
-        this.players[this.currentPlayer].hand.push(newCard)
+        this.players = this.players.map(el => 
+            this.players.indexOf(el) === this.currentPlayer ? {...el, hand:[...prevHand, newCard]} : el)
+
+        //this.players[this.currentPlayer].hand.push(newCard)
+
+        var points = this.players[this.currentPlayer].points
         var length = this.players[this.currentPlayer].hand.length-1
-        this.players[this.currentPlayer].points+=this.players[this.currentPlayer].hand[length].weight
+        this.players = this.players.map(el => 
+            this.players.indexOf(el) === this.currentPlayer ? {...el, points: points+this.players[this.currentPlayer].hand[length].weight}:el)
+        
+        //this.players[this.currentPlayer].points+=this.players[this.currentPlayer].hand[length].weight
     }
 
     stay(){
         //stops round for player
-
+        var prevHand = this.players[this.currentPlayer].hand
         if(this.currentPlayer===0){
             this.currentPlayer++
-            this.players[0].hand[0].hidden=false
+            //this.players[0].hand[0].hidden=false
+            this.players = this.players.map(el => 
+                this.currentPlayer===0 ? {...el, hand: prevHand.map(card => prevHand.indexOf(card)===0 ? {...card, hidden:false}:card)} :el)
         }else{
             this.end()
         }

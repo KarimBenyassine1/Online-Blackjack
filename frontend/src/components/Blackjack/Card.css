@@ -1,8 +1,19 @@
 .card{
     width: 200px;
-    height: 300px;
-    margin: 20px;
+    height: 280px;
+    margin-right: 25px;
     border: 2px solid black;
-    border-radius: 5px;
+    border-radius: 10px;
     background-color: #F8F8FF;
+}
+
+.value{
+    font-size: 40px;
+    margin-left: 10px;
+}
+
+
+.big-suit{
+    font-size: 200px;
+    text-align: center;
 }
