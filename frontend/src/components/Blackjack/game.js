@@ -17,7 +17,7 @@ export default class Game{
     }
 
     startBlackJack(){
-        this.currentPlayer=0
+        this.currentPlayer=1
         this.winner = ""
         this.end = false
         this.shuffle()
@@ -39,7 +39,7 @@ export default class Game{
         for(var j = 0; j<this.players.length; j++){
             for(var i = 0; i<2; i++){
                 var newCard = this.deck.pop()
-                if(i===0 && this.currentPlayer===0){newCard.hidden=true}
+                if(i===0 && j===0){newCard.hidden=true}
                 this.players[j].hand.push(newCard)
                 this.players[j].points+=this.players[j].hand[i].weight
             }
@@ -59,24 +59,21 @@ export default class Game{
         this.players = this.players.map(el => 
             this.players.indexOf(el) === this.currentPlayer ? {...el, hand:[...prevHand, newCard]} : el)
 
-        //this.players[this.currentPlayer].hand.push(newCard)
 
         var points = this.players[this.currentPlayer].points
         var length = this.players[this.currentPlayer].hand.length-1
         this.players = this.players.map(el => 
             this.players.indexOf(el) === this.currentPlayer ? {...el, points: points+this.players[this.currentPlayer].hand[length].weight}:el)
         
-        //this.players[this.currentPlayer].points+=this.players[this.currentPlayer].hand[length].weight
     }
 
     stay(){
         //stops round for player
-        var prevHand = this.players[this.currentPlayer].hand
-        if(this.currentPlayer===0){
-            this.currentPlayer++
-            //this.players[0].hand[0].hidden=false
+        if(this.currentPlayer===1){
+            this.currentPlayer=0
+            var prevHand = this.players[this.currentPlayer].hand
             this.players = this.players.map(el => 
-                this.currentPlayer===0 ? {...el, hand: prevHand.map(card => prevHand.indexOf(card)===0 ? {...card, hidden:false}:card)} :el)
+                this.players.indexOf(el) === 0? {...el, hand: prevHand.map(card => prevHand.indexOf(card)===0 ? {...card, hidden:false}:card)} : el)
         }else{
             this.end()
         }
@@ -105,21 +102,19 @@ export default class Game{
             this.winner ="tie"
         }
         
-        setTimeout(this.restartGame(), 3000);
+        setTimeout(this.restartGame(), 5000);
     }
 
     
     restartGame(){
-        for(var i = 0; i<2; i++){
-            this.players[i].hand = []
-        }
-
+        this.end = false
+        this.players = createPlayers()
         this.dealCards()
     }
 }
 
 function createPlayers(){
-    // We want the creater of the game as the "Dealer" and the one who joins as the "Better"
+    // We want the creator of the game as the "Dealer" and the one who joins as the "Better"
     var players = []
     var roles = ["Dealer", "Better"]
 

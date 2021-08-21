@@ -24,7 +24,30 @@ export default class Blackjack extends Component {
         this.setState({gameState: this.state.gameState})
     }
 
-    render() {
+    playerPoints = () =>{
+        return(
+            <div className="player">
+                Player:  
+                <span> {this.state.gameState.players[1].points}</span>
+            </div>
+        )
+    }
+
+
+    dealerPoints = () =>{
+        return(
+            <div className="dealer">
+                Dealer:  
+                {this.state.gameState.currentPlayer===1 ? 
+                <span> {this.state.gameState.players[0].points - this.state.gameState.players[0].hand[0].weight}</span>
+                :
+                <span> {this.state.gameState.players[0].points}</span>
+                }
+            </div>
+        )
+    }
+
+    render(){
        const {gameState} = this.state
         return (
             <div className="game">
@@ -37,6 +60,11 @@ export default class Blackjack extends Component {
                 </div>
                 <div className="control-center">
                     <button className="hit-me" onClick={this.hitMe}>Hit Me</button>
+                    <div className="points">
+                        {this.dealerPoints()}
+                        {this.playerPoints()}
+                    </div>
+                    <button className="stay" onClick = {this.stay}>Stay</button>
                 </div>
                 <div className="card-container-your">
                     {gameState.players[0].hand.map(card=>{

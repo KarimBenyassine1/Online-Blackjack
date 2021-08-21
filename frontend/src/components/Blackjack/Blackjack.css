@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400&display=swap');
 
 .card-container-your{
     display: flex;
@@ -17,8 +18,10 @@
 }
 
 .hit-me{
+    font-family: 'Roboto', sans-serif;
     position: absolute;
     bottom: 47%;
+    left: 34%;
     padding:0.35em 1.2em;
     border:0.1em solid white;
     margin:0 0.3em 0.3em 0;
@@ -38,6 +41,52 @@
 
     
 .hit-me:hover{
-    color:black;
+    color:#35654d;
     background-color:white;
+}
+
+.stay{
+    font-family: 'Roboto', sans-serif;
+    position: absolute;
+    bottom: 47%;
+    right: 36%;
+    padding:0.35em 1.2em;
+    border:0.1em solid white;
+    margin:0 0.3em 0.3em 0;
+    border-radius:0.5;
+    height: 50px;
+    width:130px;
+    box-sizing: border-box;
+    text-decoration:none;
+    font-family:'Roboto',sans-serif;
+    font-weight:500;
+    font-size: 20px;
+    color:white;
+    background-color:#35654d;
+    text-align:center;
+    transition: all 0.2s;
+}
+
+.stay:hover{
+    color:#35654d;
+    background-color:white;
+}
+
+.points{
+    font-family: 'Lato', sans-serif;
+    color: white;
+    font-size: 65px;
+    font-family: 'Roboto', sans-serif;
+}
+
+.points .player{
+    position: absolute;
+    bottom: 46%;
+    right: 10%;
+}
+
+.points .dealer{
+    position: absolute;
+    bottom: 46%;
+    left: 8%;
 }
