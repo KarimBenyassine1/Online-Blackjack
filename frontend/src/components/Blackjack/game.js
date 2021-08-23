@@ -2,12 +2,12 @@ var SUITS= ["♠", "♣", "♥", "♦"];
 var VALUES = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"];
 
 export default class Game{
-    constructor(deck = createDeck(), players = createPlayers(), currentPlayer, winner, end){
+    constructor(deck = createDeck(), players = createPlayers(), currentPlayer, winner, endOfRound){
         this.deck = deck
         this.players = players
         this.currentPlayer = currentPlayer
         this.winner = winner
-        this.end = end
+        this.endOfRound = endOfRound
         
         this.startBlackJack()
     }
@@ -19,9 +19,10 @@ export default class Game{
     startBlackJack(){
         this.currentPlayer=1
         this.winner = ""
-        this.end = false
+        this.endOfRound = false
         this.shuffle()
         this.dealCards()
+        this.check()
     }
 
     shuffle(){
@@ -65,58 +66,69 @@ export default class Game{
         this.players = this.players.map(el => 
             this.players.indexOf(el) === this.currentPlayer ? {...el, points: points+this.players[this.currentPlayer].hand[length].weight}:el)
         
+
+        this.check()
     }
 
     stay(){
         //stops round for player
         if(this.currentPlayer===1){
             this.currentPlayer=0
+            this.check()
             var prevHand = this.players[this.currentPlayer].hand
             this.players = this.players.map(el => 
                 this.players.indexOf(el) === 0? {...el, hand: prevHand.map(card => prevHand.indexOf(card)===0 ? {...card, hidden:false}:card)} : el)
         }else{
-            this.end()
+            this.endGame()
         }
     }
 
     check(){
-        if(this.players[this.currentPlayer]>21){
-            this.end()
-        }else if (this.players[this.currentPlayer]===21){
-            this.end = true
-            this.winner = this.players[this.currentPlayer].role
+        if(this.players[this.currentPlayer].points>21 || (this.currentPlayer===0 && this.players[0].points>this.players[1].points)){
+            if(this.currentPlayer===1){
+                this.currentPlayer=0
+            }
+            this.endGame()
+        }else if (this.players[this.currentPlayer].points===21){
+            this.endOfRound  = true
+            this.winner = "Blackjack!"
         }
     }
     
-    end(){
-        this.end = true
-        if(this.players[0]>21){
-            this.winner = this.players[1].role
-        }else if(this.players[1]>21){
-            this.winner = this.players[0].role
-        }else if(this.players[0].points>this.players[1].points){
-            this.winner = this.players[0].role
-        }else if(this.players[0].points<this.players[1].points){
-            this.winner = this.players[1].role
-        }else{
-            this.winner ="tie"
-        }
-        
-        setTimeout(this.restartGame(), 5000);
-    }
 
+    endGame(){
+        console.log("finished round")
+        var prevHand = this.players[0].hand
+        this.endOfRound = true
+        if(this.players[0].points>21){
+            this.winner = this.players[1].role +" Wins!"
+        }else if(this.players[1].points>21){
+            this.players = this.players.map(el => 
+                this.players.indexOf(el) === 0? {...el, hand: prevHand.map(card => prevHand.indexOf(card)===0 ? {...card, hidden:false}:card)} : el)
+            this.winner = this.players[0].role +" Wins!"
+        }else if(this.players[0].points>this.players[1].points){
+            this.winner = this.players[0].role +" Wins!"
+        }else if(this.players[0].points<this.players[1].points){
+            this.winner = this.players[1].role + " Wins!"
+        }else{
+            this.winner ="Tie"
+        }
+
+    }
     
     restartGame(){
-        this.end = false
+        this.endOfRound = false
+        this.currentPlayer=1
+        this.winner = ""
         this.players = createPlayers()
         this.dealCards()
     }
 }
 
 function createPlayers(){
-    // We want the creator of the game as the "Dealer" and the one who joins as the "Better"
+    // We want the creator of the game as the "Dealer" and the one who joins as the "Player"
     var players = []
-    var roles = ["Dealer", "Better"]
+    var roles = ["Dealer", "Player"]
 
     for(var i = 0; i<2; i++){
         var hand = []

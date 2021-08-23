@@ -15,7 +15,7 @@ export default class Blackjack extends Component {
 
     hitMe = () =>{
         this.state.gameState.hitMe()
-        this.setState({gameState: this.state.gameState})
+        this.setState({gameState: this.state.gameState}, ()=>console.log(this.state.gameState))
     }
 
 
@@ -23,6 +23,7 @@ export default class Blackjack extends Component {
         this.state.gameState.stay()
         this.setState({gameState: this.state.gameState})
     }
+
 
     playerPoints = () =>{
         return(
@@ -33,12 +34,17 @@ export default class Blackjack extends Component {
         )
     }
 
+    nextRound = () =>{
+        this.state.gameState.restartGame()
+        this.setState({gameState: this.state.gameState})
+    }
+
 
     dealerPoints = () =>{
         return(
             <div className="dealer">
                 Dealer:  
-                {this.state.gameState.currentPlayer===1 ? 
+                {this.state.gameState.currentPlayer===1? 
                 <span> {this.state.gameState.players[0].points - this.state.gameState.players[0].hand[0].weight}</span>
                 :
                 <span> {this.state.gameState.players[0].points}</span>
@@ -50,7 +56,7 @@ export default class Blackjack extends Component {
     render(){
        const {gameState} = this.state
         return (
-            <div className="game">
+            <div>
                 <div className="card-container-opponent">
                     {gameState.players[1].hand.map(card=>{
                         return(
@@ -59,19 +65,39 @@ export default class Blackjack extends Component {
                     })}
                 </div>
                 <div className="control-center">
-                    <button className="hit-me" onClick={this.hitMe}>Hit Me</button>
                     <div className="points">
-                        {this.dealerPoints()}
+                      {this.dealerPoints()}
                         {this.playerPoints()}
                     </div>
-                    <button className="stay" onClick = {this.stay}>Stay</button>
+                    {gameState.endOfRound ?
+                    <div></div>
+                    :
+                    <>
+                    <button className="hit-me" onClick={this.hitMe} disabled={gameState.endOfRound}>Hit Me</button>
+                    <button className="stay" onClick = {this.stay} disabled={gameState.endOfRound}>Stay</button>
+                    </>
+                    }
                 </div>
+                {gameState.endOfRound ?
+                <>
+                    <div className="icon" onClick = {()=>{this.nextRound()}}>
+                            <div className="arrow">
+                                Next Round >
+                            </div>
+                    </div>
+                </>
+                :
+                <div></div>
+                }
                 <div className="card-container-your">
                     {gameState.players[0].hand.map(card=>{
                         return(
                                 <Card card = {card} key={String(card.value)+card.suit}/>
                         )
                     })}
+                </div>
+                <div className="winner-state">
+                        {gameState.winner}
                 </div>
             </div>
         )

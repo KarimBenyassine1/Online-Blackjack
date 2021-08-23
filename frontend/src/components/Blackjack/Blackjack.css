@@ -21,7 +21,7 @@
     font-family: 'Roboto', sans-serif;
     position: absolute;
     bottom: 47%;
-    left: 34%;
+    left: 34.5%;
     padding:0.35em 1.2em;
     border:0.1em solid white;
     margin:0 0.3em 0.3em 0;
@@ -82,11 +82,24 @@
 .points .player{
     position: absolute;
     bottom: 46%;
-    right: 10%;
+    right: 13.5%;
 }
 
 .points .dealer{
     position: absolute;
     bottom: 46%;
-    left: 8%;
+    left: 11.5%;
+}
+
+.winner-state{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Lato', sans-serif;
+    color: gold;
+    align-items: center;
+    margin-top: -412px;
+    margin-right: 30px;
+    font-size: 65px;
+    font-family: 'Roboto', sans-serif;
 }
