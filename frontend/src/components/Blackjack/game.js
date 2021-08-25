@@ -36,10 +36,20 @@ export default class Game{
     }
 
     dealCards(){
+        if(this.deck.length<4){
+            this.deck = createDeck()
+            this.shuffle()
+        }
+
+
         //Gives each player two cards
         for(var j = 0; j<this.players.length; j++){
             for(var i = 0; i<2; i++){
                 var newCard = this.deck.pop()
+                if(newCard.value ==="A"){
+                    this.players[j].hasAce = true
+                    console.log(this.players)
+                }
                 if(i===0 && j===0){newCard.hidden=true}
                 this.players[j].hand.push(newCard)
                 this.players[j].points+=this.players[j].hand[i].weight
@@ -51,12 +61,17 @@ export default class Game{
         //adds another card to player
         if(this.deck.length===0){
             this.deck = createDeck()
+            var allPlayerCards = this.players[0].hand.concat(this.players[1].hand)
+            var filteredDeck = this.deck.filter(card => !allPlayerCards.includes(card))
+            this.deck = filteredDeck
+            this.shuffle()
 
         }
 
         var prevHand = this.players[this.currentPlayer].hand
 
         var newCard = this.deck.pop()
+        if(newCard.value ==="A"){this.players[this.currentPlayer].hasAce = true}
         this.players = this.players.map(el => 
             this.players.indexOf(el) === this.currentPlayer ? {...el, hand:[...prevHand, newCard]} : el)
 
@@ -65,6 +80,14 @@ export default class Game{
         var length = this.players[this.currentPlayer].hand.length-1
         this.players = this.players.map(el => 
             this.players.indexOf(el) === this.currentPlayer ? {...el, points: points+this.players[this.currentPlayer].hand[length].weight}:el)
+        
+        
+        if(this.players[this.currentPlayer].points >21 && this.players[this.currentPlayer].hasAce){
+            points = this.players[this.currentPlayer].points
+            this.players = this.players.map(el => 
+                this.players.indexOf(el) === this.currentPlayer ? {...el, points: points-10}:el)
+            this.players[this.currentPlayer].hasAce = false
+        }
         
 
         this.check()
@@ -84,6 +107,12 @@ export default class Game{
     }
 
     check(){
+        if(this.players[this.currentPlayer].points > 21 && this.players[this.currentPlayer].hasAce){
+            var points = this.players[this.currentPlayer].points
+            this.players = this.players.map(el => 
+                this.players.indexOf(el) === this.currentPlayer ? {...el, points: points-10}:el)
+        }
+
         if(this.players[this.currentPlayer].points>21 || (this.currentPlayer===0 && this.players[0].points>this.players[1].points)){
             if(this.currentPlayer===1){
                 this.currentPlayer=0
@@ -122,6 +151,7 @@ export default class Game{
         this.winner = ""
         this.players = createPlayers()
         this.dealCards()
+        this.check()
     }
 }
 
@@ -132,7 +162,7 @@ function createPlayers(){
 
     for(var i = 0; i<2; i++){
         var hand = []
-        var player = {role: roles[i], ID: "pending",  points:0, hand: hand}
+        var player = {role: roles[i], ID: "pending",  points:0, hand: hand, hasAce : false}
         players.push(player)
     }
 

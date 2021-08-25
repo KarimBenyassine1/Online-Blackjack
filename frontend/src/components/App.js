@@ -13,7 +13,7 @@ class App extends Component {
           <React.Fragment>
             <Switch>
               <Route path="/" exact component={JoinRoom}/>
-              <Route path="/game/:id" exact component={Blackjack}/>
+              <Route path="/game" exact component={Blackjack}/>
             </Switch>
           </React.Fragment>
         </BrowserRouter>

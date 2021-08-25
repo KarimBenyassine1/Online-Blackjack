@@ -28,17 +28,10 @@ export default class Blackjack extends Component {
     playerPoints = () =>{
         return(
             <div className="player">
-                Player:  
-                <span> {this.state.gameState.players[1].points}</span>
+                {`Player: ${this.state.gameState.players[1].points}`}
             </div>
         )
     }
-
-    nextRound = () =>{
-        this.state.gameState.restartGame()
-        this.setState({gameState: this.state.gameState})
-    }
-
 
     dealerPoints = () =>{
         return(
@@ -51,6 +44,11 @@ export default class Blackjack extends Component {
                 }
             </div>
         )
+    }
+
+    nextRound = () =>{
+        this.state.gameState.restartGame()
+        this.setState({gameState: this.state.gameState})
     }
 
     render(){
@@ -70,25 +68,20 @@ export default class Blackjack extends Component {
                         {this.playerPoints()}
                     </div>
                     {gameState.endOfRound ?
-                    <div></div>
-                    :
                     <>
-                    <button className="hit-me" onClick={this.hitMe} disabled={gameState.endOfRound}>Hit Me</button>
-                    <button className="stay" onClick = {this.stay} disabled={gameState.endOfRound}>Stay</button>
-                    </>
-                    }
-                </div>
-                {gameState.endOfRound ?
-                <>
-                    <div className="icon" onClick = {()=>{this.nextRound()}}>
+                        <div className="icon" onClick = {()=>{this.nextRound()}}>
                             <div className="arrow">
                                 Next Round >
                             </div>
-                    </div>
-                </>
-                :
-                <div></div>
-                }
+                        </div>
+                    </>
+                    :
+                    <>
+                        <button className="hit-me" onClick={this.hitMe} disabled={gameState.endOfRound}>Hit Me</button>
+                        <button className="stay" onClick = {this.stay} disabled={gameState.endOfRound}>Stay</button>
+                    </>
+                    }
+                </div>
                 <div className="card-container-your">
                     {gameState.players[0].hand.map(card=>{
                         return(
