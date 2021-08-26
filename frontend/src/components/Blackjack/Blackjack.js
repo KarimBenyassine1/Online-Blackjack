@@ -2,15 +2,30 @@ import React, { Component } from 'react'
 import Game from "./game"
 import Card from "./Card"
 import "./Blackjack.css"
+import io from "socket.io-client"
+import queryString from "query-string"
+
+let socket
+const ENDPOINT = "localhost:5000"
 
 export default class Blackjack extends Component {
-
     state = {
-        gameState : new Game()
+        gameState : new Game(),
+        name : "",
+        room: ""
     }
 
     componentDidMount(){
         console.log(this.state.gameState)
+        const {name, room} = queryString.parse(this.props.location.search)
+        
+        this.setState({name: name, room: room})
+
+
+        socket = io(ENDPOINT);
+
+        console.log(socket)
+
     }
 
     hitMe = () =>{
@@ -18,12 +33,10 @@ export default class Blackjack extends Component {
         this.setState({gameState: this.state.gameState}, ()=>console.log(this.state.gameState))
     }
 
-
     stay = () =>{
         this.state.gameState.stay()
         this.setState({gameState: this.state.gameState})
     }
-
 
     playerPoints = () =>{
         return(

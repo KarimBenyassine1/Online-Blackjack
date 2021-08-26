@@ -26,7 +26,7 @@ export default class Game{
     }
 
     shuffle(){
-        // shuffles cards randomly
+        // Shuffles cards randomly
         for(let i =this.numberOfCards-1; i>0; i--){
             const newIndex = Math.floor(Math.random()*(i+1))
             const temp = this.deck[newIndex]
@@ -36,11 +36,11 @@ export default class Game{
     }
 
     dealCards(){
-        if(this.deck.length<4){
+        // Makes sure that there is a total of 4 cards given in a round
+        if(this.numberOfCards<4){
             this.deck = createDeck()
             this.shuffle()
         }
-
 
         //Gives each player two cards
         for(var j = 0; j<this.players.length; j++){
@@ -58,8 +58,8 @@ export default class Game{
     }
 
     hitMe(){
-        //adds another card to player
-        if(this.deck.length===0){
+        // New deck if deck ran out of cards
+        if(this.numberOfCards===0){
             this.deck = createDeck()
             var allPlayerCards = this.players[0].hand.concat(this.players[1].hand)
             var filteredDeck = this.deck.filter(card => !allPlayerCards.includes(card))
@@ -68,20 +68,20 @@ export default class Game{
 
         }
 
+        // Adding card to player hand
         var prevHand = this.players[this.currentPlayer].hand
-
         var newCard = this.deck.pop()
         if(newCard.value ==="A"){this.players[this.currentPlayer].hasAce = true}
         this.players = this.players.map(el => 
             this.players.indexOf(el) === this.currentPlayer ? {...el, hand:[...prevHand, newCard]} : el)
 
-
+        // Updating points
         var points = this.players[this.currentPlayer].points
         var length = this.players[this.currentPlayer].hand.length-1
         this.players = this.players.map(el => 
             this.players.indexOf(el) === this.currentPlayer ? {...el, points: points+this.players[this.currentPlayer].hand[length].weight}:el)
         
-        
+        // Changing Ace to value of 1 if hand goes over 21
         if(this.players[this.currentPlayer].points >21 && this.players[this.currentPlayer].hasAce){
             points = this.players[this.currentPlayer].points
             this.players = this.players.map(el => 
@@ -89,7 +89,7 @@ export default class Game{
             this.players[this.currentPlayer].hasAce = false
         }
         
-
+        //checks result
         this.check()
     }
 
@@ -99,6 +99,8 @@ export default class Game{
             this.currentPlayer=0
             this.check()
             var prevHand = this.players[this.currentPlayer].hand
+
+            //makes dealer's first card visible
             this.players = this.players.map(el => 
                 this.players.indexOf(el) === 0? {...el, hand: prevHand.map(card => prevHand.indexOf(card)===0 ? {...card, hidden:false}:card)} : el)
         }else{
@@ -107,6 +109,7 @@ export default class Game{
     }
 
     check(){
+        //Makes Ace to value of 1 if both cards are ace at the start of round
         if(this.players[this.currentPlayer].points > 21 && this.players[this.currentPlayer].hasAce){
             var points = this.players[this.currentPlayer].points
             this.players = this.players.map(el => 
@@ -130,14 +133,18 @@ export default class Game{
         var prevHand = this.players[0].hand
         this.endOfRound = true
         if(this.players[0].points>21){
+            //player wins
             this.winner = this.players[1].role +" Wins!"
         }else if(this.players[1].points>21){
+            // dealer wins
             this.players = this.players.map(el => 
                 this.players.indexOf(el) === 0? {...el, hand: prevHand.map(card => prevHand.indexOf(card)===0 ? {...card, hidden:false}:card)} : el)
             this.winner = this.players[0].role +" Wins!"
         }else if(this.players[0].points>this.players[1].points){
+            // dealer wins
             this.winner = this.players[0].role +" Wins!"
         }else if(this.players[0].points<this.players[1].points){
+            // player wins
             this.winner = this.players[1].role + " Wins!"
         }else{
             this.winner ="Tie"
@@ -146,6 +153,7 @@ export default class Game{
     }
     
     restartGame(){
+        // creates new round
         this.endOfRound = false
         this.currentPlayer=1
         this.winner = ""
