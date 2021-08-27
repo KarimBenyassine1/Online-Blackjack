@@ -5,28 +5,46 @@ import "./Blackjack.css"
 import io from "socket.io-client"
 import queryString from "query-string"
 
-let socket
-const ENDPOINT = "localhost:5000"
+const ENDPOINT = "http://localhost:5000"
+const socket = io.connect(ENDPOINT);
 
 export default class Blackjack extends Component {
     state = {
         gameState : new Game(),
-        name : "",
-        room: ""
+        room: "",
+        roomFull: false,
+        users : [],
+        currentUser : ""
     }
 
     componentDidMount(){
         console.log(this.state.gameState)
-        const {name, room} = queryString.parse(this.props.location.search)
-        
-        this.setState({name: name, room: room})
+        const {room} = queryString.parse(this.props.location.search)
+         
 
-
-        socket = io(ENDPOINT);
+        this.setState({room: room})
 
         console.log(socket)
 
+        socket.emit('join', {room: room}, (error) => {
+            if(error)
+               this.setState({roomFull: true})
+        })
+
+        socket.on("roomData", ({ users }) => {
+            this.setState({users: users}, ()=>console.log(this.state.users))
+        })
+
+        socket.on('currentUserData', ({ name }) => {
+            this.setState({currentUser: name}, ()=>console.log(this.state.currentUser))
+        })
     }
+
+    componentWillUnmount(){
+        socket.emit("disconnect")
+        socket.off()
+    }
+
 
     hitMe = () =>{
         this.state.gameState.hitMe()
