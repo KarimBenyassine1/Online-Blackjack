@@ -46,7 +46,7 @@ io.on("connection", (socket)=>{
         const user = removeUser(socket.id)
         if(user)
             io.to(user.room).emit('roomData', {room: user.room, users: getUsersInRoom(user.room)})
-            console.log(`${user.name} has disconnected`)
+            console.log(`Someone has disconnected`)
     })
 })
 

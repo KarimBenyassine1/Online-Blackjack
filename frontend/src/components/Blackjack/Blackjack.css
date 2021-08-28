@@ -108,3 +108,36 @@
     left: 92%;
     font-family: 'Roboto', sans-serif;
 }
+
+.full{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    height: 100vh;
+    color: white;
+    align-items: center;
+}
+
+.back-button{
+    padding:0.35em 1.2em;
+    border:0.1em solid white;
+    margin:1em 0.3em 0.3em 0;
+    border-radius:0.5;
+    height: 50px;
+    width:130px;
+    box-sizing: border-box;
+    text-decoration:none;
+    font-family:'Roboto',sans-serif;
+    font-weight:500;
+    font-size: 20px;
+    color:white;
+    background-color:#35654d;
+    text-align:center;
+    transition: all 0.2s;
+}
+
+.back-button:hover{
+    color:#35654d;
+    background-color:white;
+}

@@ -4,6 +4,7 @@ import Card from "./Card"
 import "./Blackjack.css"
 import io from "socket.io-client"
 import queryString from "query-string"
+import {Link} from "react-router-dom";
 
 const ENDPOINT = "http://localhost:5000"
 const socket = io.connect(ENDPOINT);
@@ -41,7 +42,7 @@ export default class Blackjack extends Component {
     }
 
     componentWillUnmount(){
-        socket.emit("disconnect")
+        socket.disconnect()
         socket.off()
     }
 
@@ -83,46 +84,129 @@ export default class Blackjack extends Component {
     }
 
     render(){
-       const {gameState} = this.state
+       const {gameState, roomFull, users, room, currentUser} = this.state
         return (
             <div>
-                <div className="card-container-opponent">
-                    {gameState.players[1].hand.map(card=>{
-                        return(
-                                <Card card = {card} key={String(card.value)+card.suit}/>
-                        )
-                    })}
-                </div>
-                <div className="control-center">
-                    <div className="points">
-                      {this.dealerPoints()}
-                        {this.playerPoints()}
+            {(!roomFull) ? 
+                <>
+
+                {users.length===1 && currentUser==="Dealer" &&
+                    <div className="full">
+                        <h1>Waiting for player to join...</h1>
+                        <p style={{"marginTop": "15px"}}>{`Send player http link: http://localhost:3000/game?room=${room}`}</p>
                     </div>
-                    {gameState.endOfRound ?
-                    <>
-                        <div className="icon" onClick = {()=>{this.nextRound()}}>
-                            <div className="arrow">
-                                Next Round >
+                }
+                
+                {users.length===1 && currentUser==="Player" &&
+                <div className="full">
+                    <h1>Dealer has left the game...</h1>
+                    <p style={{"marginTop": "15px"}}>{`Send player http link: http://localhost:3000/game?room=${room}`}</p>
+                </div>
+                }
+
+                {users.length===2 && 
+                <>
+                    {/* DEALER VIEW */}
+                    {currentUser==="Dealer" && 
+                        <>
+                            <div>
+                                <div className="card-container-opponent">
+                                    {gameState.players[1].hand.map(card=>{
+                                        return(
+                                                <Card card = {card} key={String(card.value)+card.suit}/>
+                                        )
+                                    })}
+                                </div>
+                                <div className="control-center">
+                                    <div className="points">
+                                    {this.dealerPoints()}
+                                        {this.playerPoints()}
+                                    </div>
+                                    {gameState.endOfRound ?
+                                    <>
+                                        <div className="icon" onClick = {()=>{this.nextRound()}}>
+                                            <div className="arrow">
+                                                Next Round >
+                                            </div>
+                                        </div>
+                                    </>
+                                    :
+                                    <>
+                                        <button className="hit-me" onClick={this.hitMe} disabled={gameState.endOfRound}>Hit Me</button>
+                                        <button className="stay" onClick = {this.stay} disabled={gameState.endOfRound}>Stay</button>
+                                    </>
+                                    }
+                                </div>
+                                <div className="card-container-your">
+                                    {gameState.players[0].hand.map(card=>{
+                                        return(
+                                                <Card card = {card} key={String(card.value)+card.suit}/>
+                                        )
+                                    })}
+                                </div>
+                                <div className="winner-state">
+                                        {gameState.winner}
+                                </div>
                             </div>
-                        </div>
-                    </>
-                    :
-                    <>
-                        <button className="hit-me" onClick={this.hitMe} disabled={gameState.endOfRound}>Hit Me</button>
-                        <button className="stay" onClick = {this.stay} disabled={gameState.endOfRound}>Stay</button>
-                    </>
+                        </>
                     }
-                </div>
-                <div className="card-container-your">
-                    {gameState.players[0].hand.map(card=>{
-                        return(
-                                <Card card = {card} key={String(card.value)+card.suit}/>
-                        )
-                    })}
-                </div>
-                <div className="winner-state">
-                        {gameState.winner}
-                </div>
+                    
+                     {/* PLAYER VIEW */}
+                    {currentUser==="Player" && 
+                        <>
+                            <div>
+                                <div className="card-container-opponent">
+                                    {gameState.players[0].hand.map(card=>{
+                                        return(
+                                                <Card card = {card} key={String(card.value)+card.suit}/>
+                                        )
+                                    })}
+                                </div>
+                                <div className="control-center">
+                                    <div className="points">
+                                    {this.dealerPoints()}
+                                        {this.playerPoints()}
+                                    </div>
+                                    {gameState.endOfRound ?
+                                    <>
+                                        <div className="icon">
+                                            <div className="arrow">
+                                                Waiting...
+                                            </div>
+                                        </div>
+                                    </>
+                                    :
+                                    <>
+                                        <button className="hit-me" onClick={this.hitMe} disabled={gameState.endOfRound}>Hit Me</button>
+                                        <button className="stay" onClick = {this.stay} disabled={gameState.endOfRound}>Stay</button>
+                                    </>
+                                    }
+                                </div>
+                                <div className="card-container-your">
+                                    {gameState.players[1].hand.map(card=>{
+                                        return(
+                                                <Card card = {card} key={String(card.value)+card.suit}/>
+                                        )
+                                    })}
+                                </div>
+                                <div className="winner-state">
+                                        {gameState.winner}
+                                </div>
+                            </div>
+                        </>
+                    }
+                    </>
+                }
+                </>
+            :
+
+            <div className="full">
+                <h1>Room Full</h1>
+                <Link to={'/'}>
+                    <button className="back-button">QUIT</button>
+                </Link>
+            </div>
+            }
             </div>
         )
     }
