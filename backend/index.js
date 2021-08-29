@@ -1,7 +1,7 @@
 const express = require("express");
 const socketio = require("socket.io");
 const http = require("http");
-const { addUser, removeUser, getUsers, getUsersInRoom } = require('./users')
+const { addUser, removeUser, getUser, getUsersInRoom } = require('./users')
 const cors = require('cors');
 
 
@@ -39,7 +39,22 @@ io.on("connection", (socket)=>{
         io.to(newUser.room).emit('roomData', {room: newUser.room, users: getUsersInRoom(newUser.room)})
         socket.emit('currentUserData', {name: newUser.name})
         console.log(`${newUser.name} has joined`)
-        callback()
+    })
+
+    socket.on("initGameState", gameState =>{
+        console.log(gameState, "init")
+        const user = getUser(socket.id)
+        if(user){
+            io.to(user.room).emit("initGameState", gameState)
+        }
+    })
+
+    socket.on("updateGameState", gameState =>{
+        console.log(gameState, "update")
+        const user = getUser(socket.id)
+        if(user){
+            io.to(user.room).emit("updateGameState", gameState)
+        }
     })
 
     socket.on("disconnect", ()=>{

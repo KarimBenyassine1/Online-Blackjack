@@ -9,9 +9,12 @@ import {Link} from "react-router-dom";
 const ENDPOINT = "http://localhost:5000"
 const socket = io.connect(ENDPOINT);
 
+let game = new Game()
+
 export default class Blackjack extends Component {
     state = {
-        gameState : new Game(),
+        gameState : game,
+        otherState: game,
         room: "",
         roomFull: false,
         users : [],
@@ -20,10 +23,11 @@ export default class Blackjack extends Component {
 
     componentDidMount(){
         console.log(this.state.gameState)
+        console.log(this.state.otherState)
         const {room} = queryString.parse(this.props.location.search)
          
 
-        this.setState({room: room})
+        this.setState({room: room, otherState: this.state.gameState})
 
         console.log(socket)
 
@@ -39,6 +43,14 @@ export default class Blackjack extends Component {
         socket.on('currentUserData', ({ name }) => {
             this.setState({currentUser: name}, ()=>console.log(this.state.currentUser))
         })
+
+        socket.emit("initGameState", {
+            gameState: this.state.otherState
+        })
+
+        socket.on("initGameState", ({gameState})=>{
+            this.setState({otherState: gameState})
+        })
     }
 
     componentWillUnmount(){
@@ -49,12 +61,18 @@ export default class Blackjack extends Component {
 
     hitMe = () =>{
         this.state.gameState.hitMe()
-        this.setState({gameState: this.state.gameState}, ()=>console.log(this.state.gameState))
+        this.setState({gameState: this.state.gameState, otherState: this.state.gameState}, ()=>console.log(this.state.gameState))
+        socket.emit("updateGameState", {
+            gameState: this.state.otherState
+        })
     }
 
     stay = () =>{
         this.state.gameState.stay()
-        this.setState({gameState: this.state.gameState})
+        this.setState({gameState: this.state.gameState, otherState: this.state.gameState}, ()=>console.log(this.state.gameState))
+        socket.emit("updateGameState", {
+            gameState: this.state.otherState
+        })
     }
 
     playerPoints = () =>{
@@ -80,11 +98,14 @@ export default class Blackjack extends Component {
 
     nextRound = () =>{
         this.state.gameState.restartGame()
-        this.setState({gameState: this.state.gameState})
+        this.setState({gameState: this.state.gameState, otherState: this.state.gameState}, ()=>console.log(this.state.gameState))
+        socket.emit("updateGameState", {
+            gameState: this.state.otherState
+        })
     }
 
     render(){
-       const {gameState, roomFull, users, room, currentUser} = this.state
+       const {gameState, roomFull, users, room, currentUser, otherState} = this.state
         return (
             <div>
             {(!roomFull) ? 
@@ -111,7 +132,7 @@ export default class Blackjack extends Component {
                         <>
                             <div>
                                 <div className="card-container-opponent">
-                                    {gameState.players[1].hand.map(card=>{
+                                    {otherState.players[1].hand.map(card=>{
                                         return(
                                                 <Card card = {card} key={String(card.value)+card.suit}/>
                                         )
@@ -122,7 +143,7 @@ export default class Blackjack extends Component {
                                     {this.dealerPoints()}
                                         {this.playerPoints()}
                                     </div>
-                                    {gameState.endOfRound ?
+                                    {otherState.endOfRound ?
                                     <>
                                         <div className="icon" onClick = {()=>{this.nextRound()}}>
                                             <div className="arrow">
@@ -132,20 +153,20 @@ export default class Blackjack extends Component {
                                     </>
                                     :
                                     <>
-                                        <button className="hit-me" onClick={this.hitMe} disabled={gameState.endOfRound}>Hit Me</button>
-                                        <button className="stay" onClick = {this.stay} disabled={gameState.endOfRound}>Stay</button>
+                                        <button className="hit-me" onClick={this.hitMe} disabled={otherState.endOfRound}>Hit Me</button>
+                                        <button className="stay" onClick = {this.stay} disabled={otherState.endOfRound}>Stay</button>
                                     </>
                                     }
                                 </div>
                                 <div className="card-container-your">
-                                    {gameState.players[0].hand.map(card=>{
+                                    {otherState.players[0].hand.map(card=>{
                                         return(
                                                 <Card card = {card} key={String(card.value)+card.suit}/>
                                         )
                                     })}
                                 </div>
                                 <div className="winner-state">
-                                        {gameState.winner}
+                                        {otherState.winner}
                                 </div>
                             </div>
                         </>
@@ -156,7 +177,7 @@ export default class Blackjack extends Component {
                         <>
                             <div>
                                 <div className="card-container-opponent">
-                                    {gameState.players[0].hand.map(card=>{
+                                    {otherState.players[0].hand.map(card=>{
                                         return(
                                                 <Card card = {card} key={String(card.value)+card.suit}/>
                                         )
@@ -167,7 +188,7 @@ export default class Blackjack extends Component {
                                     {this.dealerPoints()}
                                         {this.playerPoints()}
                                     </div>
-                                    {gameState.endOfRound ?
+                                    {otherState.endOfRound ?
                                     <>
                                         <div className="icon">
                                             <div className="arrow">
@@ -177,20 +198,20 @@ export default class Blackjack extends Component {
                                     </>
                                     :
                                     <>
-                                        <button className="hit-me" onClick={this.hitMe} disabled={gameState.endOfRound}>Hit Me</button>
-                                        <button className="stay" onClick = {this.stay} disabled={gameState.endOfRound}>Stay</button>
+                                        <button className="hit-me" onClick={this.hitMe} disabled={otherState.endOfRound}>Hit Me</button>
+                                        <button className="stay" onClick = {this.stay} disabled={otherState.endOfRound}>Stay</button>
                                     </>
                                     }
                                 </div>
                                 <div className="card-container-your">
-                                    {gameState.players[1].hand.map(card=>{
+                                    {otherState.players[1].hand.map(card=>{
                                         return(
                                                 <Card card = {card} key={String(card.value)+card.suit}/>
                                         )
                                     })}
                                 </div>
                                 <div className="winner-state">
-                                        {gameState.winner}
+                                        {otherState.winner}
                                 </div>
                             </div>
                         </>
