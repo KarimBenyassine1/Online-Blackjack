@@ -35,6 +35,14 @@ export default class Game{
         }
     }
 
+    change(deck, players,currentPlayer, winner, endOfRound){
+        this.deck = deck
+        this.players = players
+        this.currentPlayer = currentPlayer
+        this.winner = winner
+        this.endOfRound = endOfRound
+    }
+
     dealCards(){
         // Makes sure that there is a total of 4 cards given in a round
         if(this.numberOfCards<4){

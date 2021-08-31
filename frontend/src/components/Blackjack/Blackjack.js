@@ -9,7 +9,8 @@ import {Link} from "react-router-dom";
 const ENDPOINT = "http://localhost:5000"
 const socket = io.connect(ENDPOINT);
 
-let game = new Game()
+const game = new Game()
+console.log(game)
 
 export default class Blackjack extends Component {
     state = {
@@ -22,14 +23,10 @@ export default class Blackjack extends Component {
     }
 
     componentDidMount(){
-        console.log(this.state.gameState)
         console.log(this.state.otherState)
         const {room} = queryString.parse(this.props.location.search)
          
-
-        this.setState({room: room, otherState: this.state.gameState})
-
-        console.log(socket)
+        this.setState({room: room})
 
         socket.emit('join', {room: room}, (error) => {
             if(error)
@@ -37,11 +34,11 @@ export default class Blackjack extends Component {
         })
 
         socket.on("roomData", ({ users }) => {
-            this.setState({users: users}, ()=>console.log(this.state.users))
+            this.setState({users: users})
         })
 
         socket.on('currentUserData', ({ name }) => {
-            this.setState({currentUser: name}, ()=>console.log(this.state.currentUser))
+            this.setState({currentUser: name})
         })
 
         socket.emit("initGameState", {
@@ -49,8 +46,24 @@ export default class Blackjack extends Component {
         })
 
         socket.on("initGameState", ({gameState})=>{
-            this.setState({otherState: gameState})
+            console.log("recieved")
+            this.state.gameState.change(gameState.deck, gameState.players, gameState.currentPlayer, gameState.winner, gameState.endOfRound)
+            this.setState({otherState: gameState, gameState: this.state.gameState}, ()=>{ 
+                console.log(this.state.otherState, this.state.gameState)
+                socket.emit("updateGameState", {
+                    gameState: this.state.otherState
+                })
+
+                socket.on("updateGameState",({gameState})=>{
+                    this.state.gameState.change(gameState.deck, gameState.players, gameState.currentPlayer, gameState.winner, gameState.endOfRound)
+                    this.setState({otherState: gameState, gameState: this.state.gameState})
+                })
+            })
+
         })
+
+
+
     }
 
     componentWillUnmount(){
@@ -58,27 +71,53 @@ export default class Blackjack extends Component {
         socket.off()
     }
 
+    nextRound = () =>{
+        this.state.gameState.restartGame()
+        this.setState({gameState: this.state.gameState, otherState: this.state.gameState}, ()=>{
+            socket.emit("updateGameState", {
+                gameState: this.state.otherState
+            })
+            
+            socket.on("updateGameState",({gameState})=>{
+                this.state.gameState.change(gameState.deck, gameState.players, gameState.currentPlayer, gameState.winner, gameState.endOfRound)
+                this.setState({otherState: gameState, gameState: this.state.gameState})
+            })
+        })
+    }
 
     hitMe = () =>{
         this.state.gameState.hitMe()
-        this.setState({gameState: this.state.gameState, otherState: this.state.gameState}, ()=>console.log(this.state.gameState))
-        socket.emit("updateGameState", {
-            gameState: this.state.otherState
+        this.setState({gameState: this.state.gameState, otherState: this.state.gameState}, ()=>{
+            socket.emit("updateGameState", {
+                gameState: this.state.otherState
+            })
+            
+            socket.on("updateGameState",({gameState})=>{
+                this.state.gameState.change(gameState.deck, gameState.players, gameState.currentPlayer, gameState.winner, gameState.endOfRound)
+                this.setState({otherState: gameState, gameState: this.state.gameState})
+            })
         })
     }
 
     stay = () =>{
         this.state.gameState.stay()
-        this.setState({gameState: this.state.gameState, otherState: this.state.gameState}, ()=>console.log(this.state.gameState))
-        socket.emit("updateGameState", {
-            gameState: this.state.otherState
+        this.setState({gameState: this.state.gameState, otherState: this.state.gameState},()=>{
+            socket.emit("updateGameState", {
+                gameState: this.state.otherState
+            })
+            
+            socket.on("updateGameState",({gameState})=>{
+                this.state.gameState.change(gameState.deck, gameState.players, gameState.currentPlayer, gameState.winner, gameState.endOfRound)
+                this.setState({otherState: gameState, gameState: this.state.gameState})
+            })
         })
+
     }
 
     playerPoints = () =>{
         return(
             <div className="player">
-                {`Player: ${this.state.gameState.players[1].points}`}
+                {`Player: ${this.state.otherState.players[1].points}`}
             </div>
         )
     }
@@ -87,21 +126,13 @@ export default class Blackjack extends Component {
         return(
             <div className="dealer">
                 Dealer:  
-                {this.state.gameState.currentPlayer===1? 
-                <span> {this.state.gameState.players[0].points - this.state.gameState.players[0].hand[0].weight}</span>
+                {this.state.otherState.currentPlayer===1? 
+                <span> {this.state.otherState.players[0].points - this.state.otherState.players[0].hand[0].weight}</span>
                 :
-                <span> {this.state.gameState.players[0].points}</span>
+                <span> {this.state.otherState.players[0].points}</span>
                 }
             </div>
         )
-    }
-
-    nextRound = () =>{
-        this.state.gameState.restartGame()
-        this.setState({gameState: this.state.gameState, otherState: this.state.gameState}, ()=>console.log(this.state.gameState))
-        socket.emit("updateGameState", {
-            gameState: this.state.otherState
-        })
     }
 
     render(){
@@ -153,8 +184,16 @@ export default class Blackjack extends Component {
                                     </>
                                     :
                                     <>
-                                        <button className="hit-me" onClick={this.hitMe} disabled={otherState.endOfRound}>Hit Me</button>
-                                        <button className="stay" onClick = {this.stay} disabled={otherState.endOfRound}>Stay</button>
+                                    {otherState.currentPlayer===1 ?
+                                    <>
+                                        <div className="turn-wait">Player's Turn...</div>
+                                    </>
+                                    :
+                                    <>
+                                        <button className="hit-me" onClick={()=>{this.hitMe()}} disabled={otherState.endOfRound}>Hit Me</button>
+                                        <button className="stay" onClick = {()=>{this.stay()}} disabled={otherState.endOfRound}>Stay</button>
+                                    </>
+                                    }
                                     </>
                                     }
                                 </div>
@@ -198,8 +237,16 @@ export default class Blackjack extends Component {
                                     </>
                                     :
                                     <>
-                                        <button className="hit-me" onClick={this.hitMe} disabled={otherState.endOfRound}>Hit Me</button>
-                                        <button className="stay" onClick = {this.stay} disabled={otherState.endOfRound}>Stay</button>
+                                   {otherState.currentPlayer===1 ?
+                                    <>
+                                        <button className="hit-me" onClick={()=>{this.hitMe()}} disabled={otherState.endOfRound}>Hit Me</button>
+                                        <button className="stay" onClick = {()=>{this.stay()}} disabled={otherState.endOfRound}>Stay</button>
+                                    </>
+                                    :
+                                    <>
+                                        <div className="turn-wait">Dealer's Turn...</div>
+                                    </>
+                                    }
                                     </>
                                     }
                                 </div>

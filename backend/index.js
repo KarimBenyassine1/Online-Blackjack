@@ -28,6 +28,9 @@ io.on("connection", (socket)=>{
             name : numberOfUsersInRoom===0 ? 'Dealer' : 'Player',
             room: room
         })
+        if(getUsersInRoom(room).filter(user=>user.name==="Dealer").length===0){
+            newUser.name="Dealer"
+        }
 
         if(error){
             console.log(error)
@@ -36,21 +39,24 @@ io.on("connection", (socket)=>{
 
         socket.join(newUser.room)
 
+        console.log(socket.id)
         io.to(newUser.room).emit('roomData', {room: newUser.room, users: getUsersInRoom(newUser.room)})
         socket.emit('currentUserData', {name: newUser.name})
         console.log(`${newUser.name} has joined`)
     })
 
-    socket.on("initGameState", gameState =>{
-        console.log(gameState, "init")
+    socket.on("initGameState", (gameState) =>{
+        
+        console.log(gameState.gameState, "init")
+        console.log(socket.id)
         const user = getUser(socket.id)
         if(user){
             io.to(user.room).emit("initGameState", gameState)
         }
     })
 
-    socket.on("updateGameState", gameState =>{
-        console.log(gameState, "update")
+    socket.on("updateGameState", (gameState) =>{
+        console.log(gameState.gameState, "update")
         const user = getUser(socket.id)
         if(user){
             io.to(user.room).emit("updateGameState", gameState)

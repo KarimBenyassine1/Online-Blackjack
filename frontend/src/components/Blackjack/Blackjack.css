@@ -141,3 +141,12 @@
     color:#35654d;
     background-color:white;
 }
+
+.turn-wait{
+    position: absolute;
+    bottom: 46.5%;
+    left: 38%;
+    color: white;
+    font-size: 45px;
+    font-family: 'Roboto', sans-serif;
+}
