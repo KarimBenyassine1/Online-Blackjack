@@ -6,11 +6,10 @@ import io from "socket.io-client"
 import queryString from "query-string"
 import {Link} from "react-router-dom";
 
-const ENDPOINT = "http://localhost:5000"
+const ENDPOINT = "https://karim-online-blackjack.herokuapp.com/"
 const socket = io.connect(ENDPOINT);
 
 const game = new Game()
-console.log(game)
 
 export default class Blackjack extends Component {
     state = {
@@ -23,7 +22,6 @@ export default class Blackjack extends Component {
     }
 
     componentDidMount(){
-        console.log(this.state.otherState)
         const {room} = queryString.parse(this.props.location.search)
          
         this.setState({room: room})
@@ -46,10 +44,8 @@ export default class Blackjack extends Component {
         })
 
         socket.on("initGameState", ({gameState})=>{
-            console.log("recieved")
             this.state.gameState.change(gameState.deck, gameState.players, gameState.currentPlayer, gameState.winner, gameState.endOfRound)
             this.setState({otherState: gameState, gameState: this.state.gameState}, ()=>{ 
-                console.log(this.state.otherState, this.state.gameState)
                 socket.emit("updateGameState", {
                     gameState: this.state.otherState
                 })
@@ -145,14 +141,14 @@ export default class Blackjack extends Component {
                 {users.length===1 && currentUser==="Dealer" &&
                     <div className="full">
                         <h1>Waiting for player to join...</h1>
-                        <p style={{"marginTop": "15px"}}>{`Send player http link: http://localhost:3000/game?room=${room}`}</p>
+                        <p style={{"marginTop": "15px"}}>{`Send player room name: ${room}`}</p>
                     </div>
                 }
                 
                 {users.length===1 && currentUser==="Player" &&
                 <div className="full">
                     <h1>Dealer has left the game...</h1>
-                    <p style={{"marginTop": "15px"}}>{`Send player http link: http://localhost:3000/game?room=${room}`}</p>
+                    <p style={{"marginTop": "15px"}}>{`Send player room name: ${room}`}</p>
                 </div>
                 }
 
